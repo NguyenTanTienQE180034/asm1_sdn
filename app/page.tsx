@@ -1,103 +1,170 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+    CardFooter,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+interface Product {
+    _id: string;
+    name: string;
+    description: string;
+    price: number;
+    image?: string;
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export default function Home() {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [search, setSearch] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const itemsPerPage = 6;
+
+    useEffect(() => {
+        fetchProducts();
+    }, [search, currentPage]);
+
+    const fetchProducts = async () => {
+        try {
+            const res = await fetch(
+                `/api/products?search=${search}&page=${currentPage}&limit=${itemsPerPage}`
+            );
+            if (!res.ok) throw new Error("Failed to fetch products");
+            const data = await res.json();
+            console.log("API response:", data);
+            if (!data.products || !Array.isArray(data.products)) {
+                throw new Error(
+                    "Invalid data format: 'products' is not an array"
+                );
+            }
+            setProducts(data.products);
+            setTotalPages(Math.ceil(data.total / itemsPerPage));
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "An error occurred");
+            setProducts([]);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (confirm("Are you sure you want to delete this product?")) {
+            try {
+                const res = await fetch(`/api/products/${id}`, {
+                    method: "DELETE",
+                });
+                if (!res.ok) throw new Error("Failed to delete product");
+                fetchProducts();
+            } catch (err) {
+                setError(
+                    err instanceof Error ? err.message : "An error occurred"
+                );
+            }
+        }
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
+    return (
+        <div className="container mx-auto p-4">
+            <h1 className="text-3xl font-bold text-gray-800 mb-6">
+                Clothing Store
+            </h1>
+            <div className="mb-6">
+                <Input
+                    type="text"
+                    placeholder="Search products..."
+                    value={search}
+                    onChange={(e) => {
+                        setSearch(e.target.value);
+                        setCurrentPage(1);
+                    }}
+                    className="max-w-md"
+                />
+            </div>
+            {error && <p className="text-red-500 mb-4">{error}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {Array.isArray(products) && products.length > 0 ? (
+                    products.map((product) => (
+                        <Card
+                            key={product._id}
+                            className="hover:shadow-lg transition-shadow duration-300"
+                        >
+                            <CardHeader>
+                                {product.image && (
+                                    <Image
+                                        src={product.image}
+                                        alt={product.name}
+                                        className="w-full h-48 object-cover rounded-t-md"
+                                        width={500}
+                                        height={500}
+                                    />
+                                )}
+                                <CardTitle className="text-xl font-semibold text-gray-700">
+                                    {product.name}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <CardDescription className="text-gray-600 mb-2">
+                                    {product.description}
+                                </CardDescription>
+                                <p className="text-lg font-bold text-green-600">
+                                    ${product.price}
+                                </p>
+                            </CardContent>
+                            <CardFooter className="flex space-x-2">
+                                <Button asChild>
+                                    <Link href={`/products/${product._id}`}>
+                                        View
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="outline">
+                                    <Link href={`/edit/${product._id}`}>
+                                        Edit
+                                    </Link>
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={() => handleDelete(product._id)}
+                                >
+                                    Delete
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))
+                ) : (
+                    <p className="text-gray-500 col-span-3 text-center">
+                        No products found.
+                    </p>
+                )}
+            </div>
+            {totalPages > 1 && (
+                <div className="mt-6 flex justify-center space-x-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                            <Button
+                                key={page}
+                                onClick={() => handlePageChange(page)}
+                                variant={
+                                    currentPage === page ? "default" : "outline"
+                                }
+                            >
+                                {page}
+                            </Button>
+                        )
+                    )}
+                </div>
+            )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
