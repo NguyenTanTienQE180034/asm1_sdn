@@ -48,9 +48,9 @@ export default function ProductDetail() {
                 <Image
                     src={product.image}
                     alt={product.name}
-                    className="w-full h-64 object-cover rounded-lg mb-6"
-                    width={800}
-                    height={600}
+                    className="w-full max-w-full h-auto object-contain rounded-lg mb-6"
+                    width={500}
+                    height={500}
                 />
             )}
             <p className="text-gray-600 mb-4">{product.description}</p>
