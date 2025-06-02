@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { createProduct } from "../action"; // ← đảm bảo file này tồn tại và đúng path
+import { createProduct } from "../action";
 import {
     Card,
     CardHeader,
@@ -152,5 +152,3 @@ export default function CreateProduct() {
         </div>
     );
 }
-
-export const dynamic = "force-static";
