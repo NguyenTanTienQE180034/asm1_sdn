@@ -2,15 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-    CardFooter,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useSearch } from "@/context/SearchContext";
 
@@ -77,80 +68,210 @@ export default function Home() {
     };
 
     return (
-        <div className="container mx-auto p-4">
-            {error && <p className="text-red-500 mb-4">{error}</p>}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="container mx-auto p-6">
+            <style jsx>{`
+                .product-grid {
+                    display: grid;
+                    grid-template-columns: repeat(
+                        auto-fill,
+                        minmax(300px, 1fr)
+                    );
+                    gap: 2rem;
+                }
+                .product-card {
+                    background-color: #fff;
+                    border-radius: 12px;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    overflow: hidden;
+                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                    display: flex;
+                    flex-direction: column;
+                    min-height: 500px;
+                }
+                .product-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+                }
+                .image-container {
+                    width: 100%;
+                    height: 300px;
+                    background-color: #f5f5f5;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    overflow: hidden;
+                }
+                .image-container img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                }
+                .product-content {
+                    padding: 1.5rem;
+                    flex-grow: 1;
+                    display: flex;
+                    flex-direction: column;
+                }
+                .product-title {
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    color: #2d3748;
+                    margin-bottom: 0.5rem;
+                }
+                .product-description {
+                    font-size: 1rem;
+                    color: #718096;
+                    margin-bottom: 1rem;
+                    line-height: 1.5;
+                }
+                .product-price {
+                    font-size: 1.25rem;
+                    font-weight: 600;
+                    color: #38a169;
+                }
+                .product-actions {
+                    padding: 1rem 1.5rem;
+                    display: flex;
+                    gap: 0.75rem;
+                    border-top: 1px solid #e2e8f0;
+                }
+                .btn {
+                    padding: 0.75rem 1.5rem;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    text-align: center;
+                    transition: background-color 0.3s ease, transform 0.1s ease;
+                    text-decoration: none;
+                }
+                .btn-view {
+                    background-color: #3182ce;
+                    color: white;
+                }
+                .btn-view:hover {
+                    background-color: #2b6cb0;
+                    transform: scale(1.05);
+                }
+                .btn-edit {
+                    background-color: #f6e05e;
+                    color: #1a202c;
+                }
+                .btn-edit:hover {
+                    background-color: #ecc94b;
+                    transform: scale(1.05);
+                }
+                .btn-delete {
+                    background-color: #e53e3e;
+                    color: white;
+                }
+                .btn-delete:hover {
+                    background-color: #c53030;
+                    transform: scale(1.05);
+                }
+                .pagination {
+                    display: flex;
+                    justify-content: center;
+                    margin-top: 2rem;
+                    gap: 0.5rem;
+                }
+                .page-btn {
+                    padding: 0.5rem 1rem;
+                    border-radius: 6px;
+                    font-weight: 500;
+                    transition: background-color 0.3s ease, transform 0.1s ease;
+                }
+                .page-btn-active {
+                    background-color: #3182ce;
+                    color: white;
+                }
+                .page-btn-inactive {
+                    background-color: #edf2f7;
+                    color: #4a5568;
+                }
+                .page-btn:hover {
+                    transform: scale(1.05);
+                }
+                .error-message {
+                    color: #e53e3e;
+                    margin-bottom: 1rem;
+                    text-align: center;
+                    font-weight: 500;
+                }
+                .no-products {
+                    color: #718096;
+                    text-align: center;
+                    grid-column: 1 / -1;
+                    font-size: 1.25rem;
+                }
+            `}</style>
+
+            {error && <p className="error-message">{error}</p>}
+            <div className="product-grid">
                 {Array.isArray(products) && products.length > 0 ? (
                     products.map((product) => (
-                        <Card
-                            key={product._id}
-                            className="flex flex-col justify-between min-h-[500px] hover:shadow-lg transition-shadow duration-300"
-                        >
-                            <CardHeader>
-                                <div className="w-full h-[400px] bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
-                                    {product.image && (
-                                        <Image
-                                            src={product.image}
-                                            alt={product.name}
-                                            width={200}
-                                            height={400}
-                                            className="object-contain w-full h-full"
-                                        />
-                                    )}
-                                </div>
-                                <CardTitle className="text-xl font-semibold text-gray-700 mt-4">
+                        <div key={product._id} className="product-card">
+                            <div className="image-container">
+                                {product.image && (
+                                    <Image
+                                        src={product.image}
+                                        alt={product.name}
+                                        width={200}
+                                        height={300}
+                                        className="object-contain"
+                                    />
+                                )}
+                            </div>
+                            <div className="product-content">
+                                <h2 className="product-title">
                                     {product.name}
-                                </CardTitle>
-                            </CardHeader>
-
-                            <CardContent className="flex-grow">
-                                <CardDescription className="text-gray-600 mb-2">
+                                </h2>
+                                <p className="product-description">
                                     {product.description}
-                                </CardDescription>
-                                <p className="text-lg font-bold text-green-600">
+                                </p>
+                                <p className="product-price">
                                     ${product.price}
                                 </p>
-                            </CardContent>
-
-                            <CardFooter className="flex space-x-2 mt-auto pt-4">
-                                <Button asChild>
-                                    <Link href={`/products/${product._id}`}>
-                                        View
-                                    </Link>
-                                </Button>
-                                <Button asChild variant="outline">
-                                    <Link href={`/edit/${product._id}`}>
-                                        Edit
-                                    </Link>
-                                </Button>
-                                <Button
-                                    variant="destructive"
+                            </div>
+                            <div className="product-actions">
+                                <Link
+                                    href={`/products/${product._id}`}
+                                    className="btn btn-view"
+                                >
+                                    View
+                                </Link>
+                                <Link
+                                    href={`/edit/${product._id}`}
+                                    className="btn btn-edit"
+                                >
+                                    Edit
+                                </Link>
+                                <button
                                     onClick={() => handleDelete(product._id)}
+                                    className="btn btn-delete"
                                 >
                                     Delete
-                                </Button>
-                            </CardFooter>
-                        </Card>
+                                </button>
+                            </div>
+                        </div>
                     ))
                 ) : (
-                    <p className="text-gray-500 col-span-3 text-center">
-                        No products found.
-                    </p>
+                    <p className="no-products">No products found.</p>
                 )}
             </div>
             {totalPages > 1 && (
-                <div className="mt-6 flex justify-center space-x-2">
+                <div className="pagination">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                         (page) => (
-                            <Button
+                            <button
                                 key={page}
                                 onClick={() => handlePageChange(page)}
-                                variant={
-                                    currentPage === page ? "default" : "outline"
-                                }
+                                className={`page-btn ${
+                                    currentPage === page
+                                        ? "page-btn-active"
+                                        : "page-btn-inactive"
+                                }`}
                             >
                                 {page}
-                            </Button>
+                            </button>
                         )
                     )}
                 </div>
