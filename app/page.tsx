@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useSearch } from "@/context/SearchContext";
 
@@ -14,6 +14,7 @@ interface Product {
 }
 
 export default function Home() {
+    const router = useRouter();
     const { search, setSearch } = useSearch();
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -32,7 +33,6 @@ export default function Home() {
             );
             if (!res.ok) throw new Error("Failed to fetch products");
             const data = await res.json();
-            console.log("API response:", data);
             if (!data.products || !Array.isArray(data.products)) {
                 throw new Error(
                     "Invalid data format: 'products' is not an array"
@@ -136,28 +136,35 @@ export default function Home() {
                     border-top: 1px solid #e2e8f0;
                 }
                 .btn {
-                    padding: 0.75rem 1.5rem;
-                    border-radius: 8px;
-                    font-weight: 500;
+                    padding: 0.65rem 1.25rem;
+                    border-radius: 9999px;
+                    font-weight: 600;
+                    font-size: 0.95rem;
                     text-align: center;
-                    transition: background-color 0.3s ease, transform 0.1s ease;
+                    transition: all 0.3s ease;
                     text-decoration: none;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                    border: none;
+                    display: inline-block;
+                    cursor: pointer;
                 }
                 .btn-view {
-                    background-color: #3182ce;
+                    background: linear-gradient(135deg, #4299e1, #3182ce);
                     color: white;
                 }
                 .btn-view:hover {
-                    background-color: #2b6cb0;
+                    background: linear-gradient(135deg, #2b6cb0, #2c5282);
                     transform: scale(1.05);
+                    box-shadow: 0 4px 10px rgba(66, 153, 225, 0.3);
                 }
                 .btn-edit {
-                    background-color: #f6e05e;
+                    background: linear-gradient(135deg, #f6e05e, #ecc94b);
                     color: #1a202c;
                 }
                 .btn-edit:hover {
-                    background-color: #ecc94b;
+                    background: linear-gradient(135deg, #f6d743, #e0c239);
                     transform: scale(1.05);
+                    box-shadow: 0 4px 10px rgba(236, 201, 75, 0.3);
                 }
                 .btn-delete {
                     background-color: #e53e3e;
@@ -166,6 +173,7 @@ export default function Home() {
                 .btn-delete:hover {
                     background-color: #c53030;
                     transform: scale(1.05);
+                    box-shadow: 0 4px 10px rgba(229, 62, 62, 0.3);
                 }
                 .pagination {
                     display: flex;
@@ -232,18 +240,22 @@ export default function Home() {
                                 </p>
                             </div>
                             <div className="product-actions">
-                                <Link
-                                    href={`/products/${product._id}`}
+                                <button
+                                    onClick={() =>
+                                        router.push(`/products/${product._id}`)
+                                    }
                                     className="btn btn-view"
                                 >
                                     View
-                                </Link>
-                                <Link
-                                    href={`/edit/${product._id}`}
+                                </button>
+                                <button
+                                    onClick={() =>
+                                        router.push(`/edit/${product._id}`)
+                                    }
                                     className="btn btn-edit"
                                 >
                                     Edit
-                                </Link>
+                                </button>
                                 <button
                                     onClick={() => handleDelete(product._id)}
                                     className="btn btn-delete"
@@ -257,6 +269,7 @@ export default function Home() {
                     <p className="no-products">No products found.</p>
                 )}
             </div>
+
             {totalPages > 1 && (
                 <div className="pagination">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
