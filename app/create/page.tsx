@@ -1,7 +1,5 @@
 "use client";
-
 import { useState, useTransition } from "react";
-import { createProduct } from "../action"; // ← đảm bảo file này tồn tại và đúng path
 import {
     Card,
     CardHeader,
@@ -13,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function CreateProduct() {
     const [isPending, startTransition] = useTransition();
@@ -24,12 +23,16 @@ export default function CreateProduct() {
     });
     const [error, setError] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const router = useRouter();
 
-    const handleSubmit = async (formData: FormData) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
         setError(null);
+
         startTransition(async () => {
             try {
                 let imageUrl = "";
+
                 if (imageFile) {
                     const imageData = new FormData();
                     imageData.append("image", imageFile);
@@ -48,12 +51,27 @@ export default function CreateProduct() {
 
                     const { url } = await uploadRes.json();
                     imageUrl = url;
-                    formData.set("image", imageUrl);
                 }
 
-                await createProduct(formData);
+                const res = await fetch("/api/products", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        name: form.name,
+                        description: form.description,
+                        price: parseFloat(form.price),
+                        image: imageUrl,
+                    }),
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || "Failed to create product");
+                }
+
                 setForm({ name: "", description: "", price: "", image: "" });
                 setImageFile(null);
+                router.push("/"); // chuyển về trang chủ sau khi tạo xong
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -78,14 +96,7 @@ export default function CreateProduct() {
                 </CardHeader>
                 <CardContent>
                     {error && <p className="text-red-500 mb-4">{error}</p>}
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            handleSubmit(formData);
-                        }}
-                        className="space-y-6"
-                    >
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-2">
                             <Label htmlFor="name">Name</Label>
                             <Input
@@ -152,5 +163,3 @@ export default function CreateProduct() {
         </div>
     );
 }
-
-export const dynamic = "force-static";
