@@ -2,14 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import SessionProvider from "@/components/SessionProvider";
 import NavBar from "@/components/NavBar";
-import {
-    ShoppingBag,
-    Instagram,
-    Twitter,
-    Facebook,
-    User,
-    LogOut,
-} from "lucide-react";
+import { Instagram, Twitter, Facebook } from "lucide-react";
 import "./globals.css";
 import {
     Carousel,
