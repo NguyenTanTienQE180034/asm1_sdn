@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import {
     Card,
     CardHeader,
@@ -23,6 +24,7 @@ interface Product {
 }
 
 export default function Home() {
+    const { data: session } = useSession();
     const { search, setSearch } = useSearch();
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState<string | null>(null);
@@ -118,17 +120,24 @@ export default function Home() {
                                         View
                                     </Link>
                                 </Button>
-                                <Button asChild variant="outline">
-                                    <Link href={`/edit/${product._id}`}>
-                                        Edit
-                                    </Link>
-                                </Button>
-                                <Button
-                                    variant="destructive"
-                                    onClick={() => handleDelete(product._id)}
-                                >
-                                    Delete
-                                </Button>
+
+                                {session && (
+                                    <>
+                                        <Button asChild variant="outline">
+                                            <Link href={`/edit/${product._id}`}>
+                                                Edit
+                                            </Link>
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            onClick={() =>
+                                                handleDelete(product._id)
+                                            }
+                                        >
+                                            Delete
+                                        </Button>
+                                    </>
+                                )}
                             </CardFooter>
                         </Card>
                     ))
